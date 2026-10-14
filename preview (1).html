@@ -1,0 +1,1298 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#123c35">
+<title>Teka-Teki Silang Biologi | Petualangan Keanekaragaman Hayati</title>
+<style>
+:root {
+  --bg: #edf5f0;
+  --panel: #ffffff;
+  --ink: #193a32;
+  --muted: #61756c;
+  --green: #17865d;
+  --green-dark: #105b42;
+  --lime: #d7f56b;
+  --blue: #3478db;
+  --yellow: #fff0b3;
+  --red: #e34d59;
+  --border: #dce8e0;
+  --cell: #ffffff;
+  --cell-size: clamp(23px, min(3.15vh, 3.15vw), 35px);
+}
+* { box-sizing: border-box; }
+html { min-height: 100%; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(ellipse at 0 0, #d8eddf 0, transparent 34%),
+    linear-gradient(145deg, #edf5f0, #f5f7e9);
+  color: var(--ink);
+  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+}
+button { font: inherit; touch-action: manipulation; }
+button:focus-visible, .cell:focus-visible {
+  outline: 3px solid #ffbd42;
+  outline-offset: 2px;
+}
+.app {
+  max-width: 1720px;
+  margin: auto;
+  padding: 14px 20px 12px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 2px 4px 5px;
+}
+.brand { display: flex; align-items: center; gap: 13px; min-width: 0; }
+.logo {
+  width: 53px; height: 53px; flex-shrink: 0;
+  display: grid; place-items: center;
+  background: var(--green-dark);
+  color: white; border-radius: 17px;
+  font-size: 29px;
+  box-shadow: 0 5px 12px #105b4220;
+}
+.eyebrow {
+  text-transform: uppercase; letter-spacing: 2px;
+  color: var(--green); font-size: 10px; font-weight: 900;
+  margin-bottom: 4px;
+}
+h1 { font-size: clamp(22px, 2.4vw, 34px); margin: 0; letter-spacing: -.9px; }
+.subtitle { font-size: 12px; color: var(--muted); margin-top: 5px; }
+.header-tag {
+  border: 1px solid #cce0d2; border-radius: 13px;
+  padding: 11px 15px; text-align: center; background: #ffffffa6;
+  flex-shrink: 0;
+}
+.header-tag strong { display: block; font-size: 13px; }
+.header-tag span { font-size: 10px; color: var(--muted); display: block; margin-top: 4px; }
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.stat {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 13px; padding: 10px 14px;
+  display: flex; align-items: center; gap: 11px;
+  min-height: 58px;
+}
+.stat-icon {
+  width: 35px; height: 35px; border-radius: 11px;
+  display: grid; place-items: center; font-size: 18px; flex-shrink: 0;
+  background: #e8f5ed;
+}
+.stat-label { font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+.stat-value { font-size: 19px; font-weight: 900; line-height: 1; }
+.progress-track { height: 5px; background: #e8eee9; border-radius: 9px; margin-top: 7px; overflow: hidden; }
+.progress-fill { height: 100%; width: 0; background: var(--green); border-radius: 9px; transition: width .3s; }
+.main {
+  display: grid;
+  grid-template-columns: minmax(340px, 1.12fr) minmax(300px, .88fr);
+  gap: 12px; flex: 1; min-height: 0;
+}
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 17px;
+  box-shadow: 0 5px 20px #193a3207;
+  min-width: 0;
+}
+.board-panel { padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+.panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.panel-heading h2 { font-size: 15px; margin: 0; }
+.panel-heading p { font-size: 10px; color: var(--muted); margin: 4px 0 0; }
+.pill {
+  padding: 6px 10px; border-radius: 99px; background: #e8f5ed;
+  color: var(--green-dark); font-size: 10px; font-weight: 800; white-space: nowrap;
+}
+.grid-viewport {
+  flex: 1; min-height: 230px;
+  display: flex; justify-content: center; align-items: center;
+  overflow: auto; overscroll-behavior: contain;
+  border-radius: 12px;
+  background-color: #f2f7f3;
+  background-image: radial-gradient(#d9e6dc 1px, transparent 1px);
+  background-size: 12px 12px;
+  padding: 10px;
+}
+.crossword {
+  display: grid; gap: 2px;
+  align-content: center; justify-content: center;
+  margin: auto; flex-shrink: 0;
+}
+.cell {
+  position: relative;
+  width: var(--cell-size); height: var(--cell-size);
+  border: 1px solid #cbdcd0; border-radius: 4px;
+  background: var(--cell);
+  color: #183d30;
+  display: flex; align-items: center; justify-content: center;
+  font-size: clamp(12px, 1.35vw, 18px); font-weight: 900;
+  text-transform: uppercase; cursor: pointer; user-select: none;
+  padding: 0; transition: background .12s, border-color .12s;
+}
+.cell.block { background: transparent; border-color: transparent; cursor: default; }
+.cell .number {
+  position: absolute; top: 1px; left: 2px;
+  font-size: clamp(6px, .55vw, 8px); line-height: 1;
+  color: #60756a; font-weight: 700;
+}
+.cell .letter { margin-top: 3px; }
+.cell.word-active { background: #dbeaff; border-color: #86aee9; }
+.cell.selected {
+  background: #ffdf72 !important; border: 2px solid #e5a41c;
+  z-index: 2;
+}
+.cell.correct { background: #c9f3d6 !important; border-color: #58b87a; }
+.cell.wrong { background: #ffd3d5 !important; border-color: var(--red); animation: shake .27s; }
+.cell.hinted { box-shadow: inset 0 0 0 2px #e8a827; }
+.cell .hint-mark {
+  position: absolute; right: 1px; bottom: 0;
+  font-size: 7px; color: #95610b;
+}
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+.board-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.legend { display: flex; gap: 10px; flex-wrap: wrap; }
+.legend span { font-size: 9px; color: var(--muted); display: inline-flex; align-items: center; gap: 4px; }
+.legend i { width: 10px; height: 10px; display: inline-block; border-radius: 3px; }
+.board-tip { font-size: 10px; color: var(--muted); text-align: right; }
+.right-column { display: flex; flex-direction: column; gap: 11px; min-height: 0; }
+.clue-panel { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.active-clue {
+  background: linear-gradient(120deg, #123c35, #1b7050);
+  color: white; border-radius: 13px; padding: 13px 15px;
+}
+.active-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.active-label { color: #c5ebd4; font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+.direction-badge { background: #ffffff24; border-radius: 99px; padding: 5px 9px; font-size: 10px; font-weight: 800; }
+.active-text { font-size: clamp(14px, 1.3vw, 17px); font-weight: 700; line-height: 1.4; margin: 10px 0; }
+.active-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.letter-count { color: #d5eddd; font-size: 10px; }
+.small-button {
+  border: 1px solid #ffffff55; color: white; background: #ffffff12;
+  padding: 7px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; cursor: pointer;
+}
+.clues-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; min-height: 0; }
+.clue-group { border: 1px solid var(--border); border-radius: 12px; padding: 10px; min-width: 0; }
+.clue-group h3 { font-size: 11px; margin: 0 0 7px; display: flex; gap: 6px; align-items: center; }
+.clue-list { display: flex; flex-direction: column; gap: 4px; max-height: 180px; overflow-y: auto; }
+.clue-item {
+  border: 1px solid transparent; background: transparent; color: var(--ink);
+  text-align: left; padding: 6px; border-radius: 7px; cursor: pointer;
+  display: flex; align-items: flex-start; gap: 7px; font-size: 10px; line-height: 1.35;
+}
+.clue-item:hover { background: #f0f6f1; }
+.clue-item.active { background: #e4f0ff; border-color: #c3d9fa; }
+.clue-item.solved { background: #e3f7e9; color: #23633e; }
+.clue-number {
+  display: grid; place-items: center; min-width: 20px; height: 20px;
+  border-radius: 6px; background: #e8f1eb; font-weight: 900; font-size: 10px; flex-shrink: 0;
+}
+.clue-item.solved .clue-number { background: #c4ebd0; }
+.control-panel { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.button-row { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 7px; }
+.btn {
+  border: 0; border-radius: 10px; padding: 11px 8px; cursor: pointer;
+  font-size: 11px; font-weight: 900; display: flex; align-items: center;
+  justify-content: center; gap: 6px; min-height: 42px; transition: transform .12s, filter .12s;
+}
+.btn:hover { filter: brightness(.97); }
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn-primary { background: var(--green); color: white; }
+.btn-help { background: #fff0bd; color: #79500b; }
+.btn-secondary { background: #edf2ef; color: #3e5c4d; }
+.message {
+  border-radius: 9px; padding: 8px 10px; background: #f2f6f2;
+  font-size: 10px; color: #486356; min-height: 32px; line-height: 1.4;
+}
+.message.error { background: #fff0f0; color: #ad303c; }
+.message.success { background: #e5f7eb; color: #23643e; }
+.keyboard {
+  display: flex; flex-direction: column; gap: 5px;
+  padding: 10px; border: 1px solid var(--border); border-radius: 12px; background: #f7faf7;
+}
+.key-row { display: flex; justify-content: center; gap: 4px; }
+.key {
+  flex: 1; min-width: 0; max-width: 37px; height: 32px;
+  border: 1px solid #d8e3da; border-bottom-width: 2px;
+  border-radius: 6px; background: white; color: #294b3d;
+  font-size: 11px; font-weight: 900; cursor: pointer; padding: 0;
+}
+.key:active { background: #d9ecdf; transform: translateY(1px); }
+.key.wide { max-width: 110px; flex: 2; background: #e6eee8; }
+.keyboard-label { font-size: 9px; font-weight: 800; color: var(--muted); display: flex; justify-content: space-between; }
+footer {
+  font-size: 9px; color: #6b8175; display: flex; justify-content: space-between;
+  align-items: center; gap: 8px; padding: 2px 4px;
+}
+footer strong { color: var(--green-dark); }
+.overlay {
+  position: fixed; inset: 0; z-index: 100;
+  display: none; align-items: center; justify-content: center;
+  padding: 20px; background: #09271edb; backdrop-filter: blur(5px);
+}
+.overlay.show { display: flex; }
+.modal {
+  width: min(480px, 100%); text-align: center; background: white;
+  border-radius: 24px; padding: 32px 26px; position: relative; overflow: hidden;
+  box-shadow: 0 25px 80px #0004; animation: appear .35s ease-out;
+}
+@keyframes appear { from { transform: translateY(15px) scale(.96); opacity: 0; } to { transform: none; opacity: 1; } }
+.trophy { font-size: 66px; line-height: 1.3; }
+.modal h2 { font-size: 27px; margin: 8px 0; color: var(--green-dark); }
+.modal p { color: var(--muted); line-height: 1.6; font-size: 13px; }
+.final-score {
+  background: #eff8ef; border-radius: 15px; padding: 16px; margin: 18px 0;
+}
+.final-score strong { display: block; font-size: 36px; color: var(--green); }
+.final-score span { font-size: 11px; color: var(--muted); }
+.modal-buttons { display: flex; gap: 8px; justify-content: center; }
+.confetti {
+  position: fixed; top: -15px; z-index: 110; pointer-events: none;
+  width: 8px; height: 13px; border-radius: 2px;
+  animation: fall 2.8s linear forwards;
+}
+@keyframes fall { to { transform: translate(var(--drift), 110vh) rotate(900deg); opacity: .1; } }
+@media (min-width: 1250px) and (min-height: 760px) {
+  .app { height: 100vh; overflow: hidden; }
+  .main { grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); }
+  .grid-viewport { min-height: 0; }
+  .clue-list { max-height: 23vh; }
+}
+@media (max-width: 900px) {
+  .app { padding: 10px; }
+  .main { grid-template-columns: 1fr; }
+  .grid-viewport { min-height: 340px; }
+  .clue-list { max-height: 250px; }
+  .right-column { min-height: auto; }
+  .header-tag { display: none; }
+  :root { --cell-size: clamp(20px, 3.3vw, 31px); }
+}
+@media (max-width: 480px) {
+  .stats { grid-template-columns: repeat(2, 1fr); gap: 7px; }
+  .stat { padding: 8px; }
+  .clues-list { grid-template-columns: 1fr; }
+  .clue-list { max-height: 190px; }
+  .brand { gap: 9px; }
+  .logo { width: 43px; height: 43px; font-size: 23px; }
+  h1 { font-size: 21px; }
+  .subtitle { font-size: 10px; }
+  .button-row { grid-template-columns: 1.3fr 1fr 1fr; }
+  .btn { font-size: 10px; }
+  .board-foot { align-items: flex-start; flex-direction: column; }
+  .board-tip { text-align: left; }
+  .grid-viewport { min-height: 300px; padding: 6px; }
+  :root { --cell-size: clamp(18px, 5.4vw, 27px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="logo" aria-hidden="true">🌿</div>
+      <div>
+        <div class="eyebrow">Biologi • Misi Penjelajah Alam</div>
+        <h1>Teka-Teki Silang Hayati</h1>
+        <div class="subtitle">Kenali kehidupan, pecahkan teka-teki, jaga bumi!</div>
+      </div>
+    </div>
+    <div class="header-tag">
+      <strong>🎓 SD KELAS 5</strong>
+      <span>Belajar sambil bermain</span>
+    </div>
+  </header>
+
+  <section class="stats" aria-label="Statistik permainan">
+    <div class="stat">
+      <div class="stat-icon">⭐</div>
+      <div><div class="stat-label">SKOR</div><div class="stat-value" id="score">1000</div></div>
+    </div>
+    <div class="stat">
+      <div class="stat-icon">🧩</div>
+      <div><div class="stat-label">KATA SELESAI</div><div class="stat-value"><span id="solved">0</span><span style="font-size:12px;color:#829489"> / 14</span></div></div>
+    </div>
+    <div class="stat">
+      <div class="stat-icon">💡</div>
+      <div><div class="stat-label">BANTUAN</div><div class="stat-value" id="hints">0</div></div>
+    </div>
+    <div class="stat">
+      <div class="stat-icon">🎯</div>
+      <div><div class="stat-label">KEMAJUAN</div><div class="stat-value" id="percent">0%</div><div class="progress-track"><div class="progress-fill" id="progress"></div></div></div>
+    </div>
+  </section>
+
+  <main class="main">
+    <section class="panel board-panel">
+      <div class="panel-heading">
+        <div><h2>🧩 Papan Teka-Teki</h2><p>Pilih kotak bernomor, lalu isi hurufnya.</p></div>
+        <span class="pill" id="directionPill">MENDATAR</span>
+      </div>
+      <div class="grid-viewport" id="gridViewport">
+        <div class="crossword" id="crossword" role="group" aria-label="Papan teka-teki silang"></div>
+      </div>
+      <div class="board-foot">
+        <div class="legend">
+          <span><i style="background:#fff;border:1px solid #cbdcd0"></i> Kosong</span>
+          <span><i style="background:#ffdf72"></i> Aktif</span>
+          <span><i style="background:#c9f3d6"></i> Benar</span>
+          <span><i style="background:#ffd3d5"></i> Perlu diperbaiki</span>
+        </div>
+        <div class="board-tip">💡 Kotak silang dapat dipilih dua arah.</div>
+      </div>
+    </section>
+
+    <div class="right-column">
+      <section class="panel clue-panel">
+        <div class="panel-heading">
+          <div><h2>📚 Petunjuk Penjelajah</h2><p>Amati petunjuk dan hubungkan dengan kehidupan nyata.</p></div>
+        </div>
+        <div class="active-clue" aria-live="polite">
+          <div class="active-top">
+            <span class="active-label" id="activeTitle">SOAL 1</span>
+            <span class="direction-badge" id="activeDirection">MENDATAR →</span>
+          </div>
+          <div class="active-text" id="activeText">Pilih salah satu nomor pada papan untuk memulai petualangan.</div>
+          <div class="active-bottom">
+            <span class="letter-count" id="letterCount">Panjang jawaban: —</span>
+            <button class="small-button" id="switchDirection" type="button">↔ Ganti arah</button>
+          </div>
+        </div>
+        <div class="clues-list">
+          <div class="clue-group">
+            <h3>➡️ MENDATAR <span class="pill" id="acrossCount">0 soal</span></h3>
+            <div class="clue-list" id="acrossClues"></div>
+          </div>
+          <div class="clue-group">
+            <h3>⬇️ MENURUN <span class="pill" id="downCount">0 soal</span></h3>
+            <div class="clue-list" id="downClues"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel control-panel">
+        <div class="button-row">
+          <button class="btn btn-primary" id="checkBtn" type="button">✓ Periksa Jawaban</button>
+          <button class="btn btn-help" id="hintBtn" type="button">💡 Bantuan</button>
+          <button class="btn btn-secondary" id="resetBtn" type="button">↻ Ulangi</button>
+        </div>
+        <div class="message" id="message" role="status" aria-live="polite">Pilih kotak di papan, baca petunjuk, dan temukan jawabannya!</div>
+        <div class="keyboard" aria-label="Keyboard virtual">
+          <div class="keyboard-label"><span>⌨️ KEYBOARD VIRTUAL</span><span>Sentuh huruf untuk mengetik</span></div>
+          <div class="key-row" id="keyRow1"></div>
+          <div class="key-row" id="keyRow2"></div>
+          <div class="key-row" id="keyRow3"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer>
+    <span>🌱 <strong>Misi Penjelajah Hayati</strong> · Belajar, berpikir, dan menjaga keanekaragaman.</span>
+    <span>Dirancang untuk kelas, proyektor, dan layar sentuh.</span>
+  </footer>
+</div>
+
+<div class="overlay" id="winOverlay" role="dialog" aria-modal="true" aria-labelledby="winTitle">
+  <div class="modal">
+    <div class="trophy">🏆</div>
+    <h2 id="winTitle">Hebat, Penjelajah Hayati!</h2>
+    <p>Kamu berhasil menyelesaikan seluruh teka-teki. Pengetahuanmu membantu kita memahami pentingnya menjaga kehidupan di bumi.</p>
+    <div class="final-score">
+      <strong id="finalScore">1000</strong>
+      <span>SKOR AKHIR</span>
+      <div style="margin-top:12px;font-size:12px;color:#61756c">💡 Bantuan digunakan: <b id="finalHints">0</b> kali</div>
+      <div style="margin-top:6px;font-size:12px;color:#61756c">🎯 Jawaban benar: <b id="finalSolved">14 dari 14</b></div>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn btn-primary" id="playAgain" type="button">🔄 Main Lagi</button>
+      <button class="btn btn-secondary" id="closeWin" type="button">Lihat Papan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/*
+  DATA MATERI
+  Guru dapat mengganti kata dan petunjuk di bagian ini.
+  Jawaban ditulis tanpa spasi, tanda hubung, atau simbol.
+  Mesin menyusun kata berdasarkan persilangan huruf yang sama.
+*/
+const PUZZLE_DATA = [
+  {
+    answer: "KEANEKARAGAMAN",
+    direction: "across",
+    clue: "Di sebuah hutan ada banyak jenis tumbuhan, hewan, dan lingkungan. Istilah untuk beragamnya kehidupan tersebut adalah ...",
+    category: "Mendatar"
+  },
+  {
+    answer: "KONSERVASI",
+    direction: "down",
+    clue: "Jika hutan tempat hidup orangutan terus ditebang, tindakan melindungi dan menjaga alam agar tetap lestari disebut ...",
+    category: "Menurun"
+  },
+  {
+    answer: "KLASIFIKASI",
+    direction: "down",
+    clue: "Seorang siswa mengelompokkan hewan berdasarkan jumlah kaki, penutup tubuh, dan cara berkembang biak. Kegiatan pengelompokan makhluk hidup ini disebut ...",
+    category: "Menurun"
+  },
+  {
+    answer: "EKOSISTEM",
+    direction: "across",
+    clue: "Di kolam, ikan, tumbuhan air, air, cahaya matahari, dan udara saling berhubungan. Kesatuan interaksi mereka disebut ...",
+    category: "Mendatar"
+  },
+  {
+    answer: "POPULASI",
+    direction: "across",
+    clue: "Di suatu padang rumput terdapat banyak rusa dari jenis yang sama dan hidup di tempat yang sama. Kumpulan itu disebut ...",
+    category: "Mendatar"
+  },
+  {
+    answer: "ADAPTASI",
+    direction: "down",
+    clue: "Bebek memiliki kaki berselaput sehingga lebih mudah berenang. Penyesuaian ciri tubuh terhadap lingkungan disebut ...",
+    category: "Menurun"
+  },
+  {
+    answer: "HABITAT",
+    direction: "across",
+    clue: "Terumbu karang menjadi tempat tinggal ikan badut. Tempat alami suatu makhluk hidup tinggal disebut ...",
+    category: "Mendatar"
+  },
+  {
+    answer: "SPESIES",
+    direction: "down",
+    clue: "Kucing rumah dan harimau sama-sama keluarga kucing, tetapi bukan jenis yang sama. Istilah ilmiah untuk satu jenis makhluk hidup adalah ...",
+    category: "Menurun"
+  },
+  {
+    answer: "ENDEMIK",
+    direction: "across",
+    clue: "Komodo secara alami hanya ditemukan di wilayah tertentu di Indonesia. Makhluk hidup yang persebaran alaminya terbatas pada wilayah tertentu disebut ...",
+    category: "Mendatar"
+  },
+  {
+    answer: "BIOSFER",
+    direction: "down",
+    clue: "Hutan, lautan, dan daratan memiliki kehidupan. Seluruh wilayah bumi yang mendukung kehidupan disebut ...",
+    category: "Menurun"
+  },
+  {
+    answer: "FAUNA",
+    direction: "across",
+    clue: "Orangutan, komodo, dan cenderawasih merupakan kekayaan hewan Indonesia. Istilah untuk seluruh jenis hewan di suatu wilayah adalah ...",
+    category: "Mendatar"
+  },
+  {
+    answer: "FLORA",
+    direction: "down",
+    clue: "Rafflesia, anggrek, dan jati merupakan kekayaan tumbuhan Indonesia. Istilah untuk seluruh jenis tumbuhan di suatu wilayah adalah ...",
+    category: "Menurun"
+  },
+  {
+    answer: "PUNAH",
+    direction: "across",
+    clue: "Jika tidak ada lagi individu suatu jenis makhluk hidup yang tersisa di bumi, jenis itu dinyatakan ...",
+    category: "Mendatar"
+  },
+  {
+    answer: "GEN",
+    direction: "down",
+    clue: "Dua tanaman mawar sejenis memiliki warna bunga berbeda karena informasi pewarisan sifat. Unit dasar pewarisan sifat yang berperan adalah ...",
+    category: "Menurun"
+  }
+];
+
+const $ = id => document.getElementById(id);
+const state = {
+  entries: [],
+  cells: new Map(),
+  rows: 0,
+  cols: 0,
+  activeEntryId: null,
+  activeDirection: "across",
+  selectedCellKey: null,
+  solved: new Set(),
+  hintedCells: new Set(),
+  checkedCells: new Set(),
+  wrongCells: new Set(),
+  errors: 0,
+  hints: 0,
+  finished: false,
+  score: 1000,
+  entryNumber: new Map(),
+  initialFocus: true
+};
+
+const keyOf = (r, c) => `${r},${c}`;
+const isAcross = entry => entry.direction === "across";
+const letterAt = (entry, index) => entry.answer[index];
+
+function setMessage(text, type = "") {
+  const el = $("message");
+  el.textContent = text;
+  el.className = "message" + (type ? " " + type : "");
+}
+
+function makePlacement(entry, row, col, direction) {
+  return { entry, row, col, direction, cells: [] };
+}
+
+/*
+  Penyusun grid:
+  - Kata pertama menjadi jangkar.
+  - Kata selanjutnya mencari posisi yang bersilangan dengan huruf sama.
+  - Posisi dinilai dari jumlah persilangan dan kekompakan papan.
+  - Jika suatu kata tidak mempunyai persilangan yang tersedia,
+    kata tetap ditempatkan di ruang terpisah agar seluruh materi tampil.
+*/
+function buildPuzzle() {
+  state.entries = [];
+  state.cells = new Map();
+  state.entryNumber = new Map();
+
+  const data = PUZZLE_DATA.map((item, index) => ({
+    ...item,
+    id: index,
+    answer: item.answer.replace(/[^A-Za-z]/g, "").toUpperCase()
+  })).filter(item => item.answer.length > 1);
+
+  const occupied = new Map();
+  const placements = [];
+
+  function positionKey(row, col) {
+    return keyOf(row, col);
+  }
+
+  function addPlacement(entry, row, col, direction) {
+    const p = makePlacement(entry, row, col, direction);
+    for (let i = 0; i < entry.answer.length; i++) {
+      const r = row + (direction === "down" ? i : 0);
+      const c = col + (direction === "across" ? i : 0);
+      const key = positionKey(r, c);
+      const ch = entry.answer[i];
+
+      if (!occupied.has(key)) occupied.set(key, { r, c, letter: ch, entries: [] });
+      const cell = occupied.get(key);
+      if (!cell.entries.includes(entry.id)) cell.entries.push(entry.id);
+      p.cells.push(key);
+    }
+    placements.push(p);
+    return p;
+  }
+
+  const first = data[0];
+  addPlacement(first, 0, 0, "across");
+
+  const pending = data.slice(1);
+  let guard = 0;
+
+  while (pending.length && guard++ < data.length * 5) {
+    let best = null;
+
+    for (let pi = 0; pi < pending.length; pi++) {
+      const entry = pending[pi];
+
+      for (const [key, cell] of occupied) {
+        for (let i = 0; i < entry.answer.length; i++) {
+          if (entry.answer[i] !== cell.letter) continue;
+
+          for (const direction of ["across", "down"]) {
+            const crossesOrientation = placements.some(p =>
+              p.direction !== direction && p.cells.includes(key)
+            );
+            if (!crossesOrientation) continue;
+
+            const row = cell.r - (direction === "down" ? i : 0);
+            const col = cell.c - (direction === "across" ? i : 0);
+            const candidateCells = [];
+            let valid = true;
+            let crosses = 0;
+            let extraTouch = 0;
+
+            for (let j = 0; j < entry.answer.length; j++) {
+              const r = row + (direction === "down" ? j : 0);
+              const c = col + (direction === "across" ? j : 0);
+              const k = positionKey(r, c);
+              const existing = occupied.get(k);
+
+              if (existing && existing.letter !== entry.answer[j]) {
+                valid = false;
+                break;
+              }
+              if (existing) {
+                if (existing.entries.some(id => {
+                  const placed = placements.find(p => p.entry.id === id);
+                  return placed && placed.direction === direction;
+                })) {
+                  valid = false;
+                  break;
+                }
+                crosses++;
+              }
+
+              const sideCells = direction === "across"
+                ? [[r - 1, c], [r + 1, c]]
+                : [[r, c - 1], [r, c + 1]];
+
+              for (const [sr, sc] of sideCells) {
+                const side = occupied.get(positionKey(sr, sc));
+                if (side && !existing) extraTouch++;
+              }
+              candidateCells.push(k);
+            }
+
+            if (!valid || crosses === 0) continue;
+
+            const allRows = [...occupied.values()].map(c => c.r).concat(
+              candidateCells.map(k => Number(k.split(",")[0]))
+            );
+            const allCols = [...occupied.values()].map(c => c.c).concat(
+              candidateCells.map(k => Number(k.split(",")[1]))
+            );
+            const area = (Math.max(...allRows) - Math.min(...allRows) + 1) *
+                         (Math.max(...allCols) - Math.min(...allCols) + 1);
+            const score = crosses * 1000 - extraTouch * 5 - area * .01;
+
+            if (!best || score > best.score) {
+              best = { entry, row, col, direction, score, pendingIndex: pi };
+            }
+          }
+        }
+      }
+    }
+
+    if (best) {
+      addPlacement(best.entry, best.row, best.col, best.direction);
+      pending.splice(best.pendingIndex, 1);
+    } else {
+      /*
+        Fallback deterministik untuk kata yang tidak menemukan
+        persilangan yang cocok pada susunan yang tersedia.
+      */
+      const entry = pending.shift();
+      const maxRow = Math.max(...[...occupied.values()].map(c => c.r));
+      const maxCol = Math.max(...[...occupied.values()].map(c => c.c));
+      const direction = entry.direction === "down" ? "down" : "across";
+      const row = direction === "across" ? maxRow + 3 : maxRow + 3;
+      const col = direction === "across" ? 0 : maxCol + 3;
+      addPlacement(entry, row, col, direction);
+    }
+  }
+
+  const minR = Math.min(...[...occupied.values()].map(c => c.r));
+  const maxR = Math.max(...[...occupied.values()].map(c => c.r));
+  const minC = Math.min(...[...occupied.values()].map(c => c.c));
+  const maxC = Math.max(...[...occupied.values()].map(c => c.c));
+
+  state.rows = maxR - minR + 1;
+  state.cols = maxC - minC + 1;
+
+  const shiftR = -minR;
+  const shiftC = -minC;
+
+  state.entries = placements.map((p, idx) => {
+    p.row += shiftR;
+    p.col += shiftC;
+    p.cells = p.cells.map(key => {
+      const [r, c] = key.split(",").map(Number);
+      return keyOf(r + shiftR, c + shiftC);
+    });
+    return {
+      id: p.entry.id,
+      answer: p.entry.answer,
+      clue: p.entry.clue,
+      direction: p.direction,
+      row: p.row,
+      col: p.col,
+      length: p.entry.answer.length,
+      cells: p.cells,
+      number: 0
+    };
+  });
+
+  state.cells = new Map();
+
+  for (const entry of state.entries) {
+    entry.cells.forEach((key, i) => {
+      if (!state.cells.has(key)) {
+        const [r, c] = key.split(",").map(Number);
+        state.cells.set(key, { r, c, solution: entry.answer[i], entries: [], number: null });
+      }
+      const cell = state.cells.get(key);
+      if (!cell.entries.includes(entry.id)) cell.entries.push(entry.id);
+    });
+  }
+
+  const starts = [];
+  for (const entry of state.entries) {
+    const key = keyOf(entry.row, entry.col);
+    starts.push({ key, entry });
+  }
+  starts.sort((a, b) => {
+    const A = state.cells.get(a.key);
+    const B = state.cells.get(b.key);
+    return A.r - B.r || A.c - B.c;
+  });
+
+  let number = 0;
+  for (const start of starts) {
+    const cell = state.cells.get(start.key);
+    if (cell.number === null) cell.number = ++number;
+    start.entry.number = cell.number;
+    state.entryNumber.set(start.entry.id, cell.number);
+  }
+}
+
+function renderGrid() {
+  const grid = $("crossword");
+  grid.innerHTML = "";
+  grid.style.gridTemplateColumns = `repeat(${state.cols}, var(--cell-size))`;
+  grid.style.gridTemplateRows = `repeat(${state.rows}, var(--cell-size))`;
+
+  for (let r = 0; r < state.rows; r++) {
+    for (let c = 0; c < state.cols; c++) {
+      const key = keyOf(r, c);
+      const data = state.cells.get(key);
+      const cell = document.createElement("button");
+      cell.type = "button";
+      cell.className = "cell" + (data ? "" : " block");
+      cell.dataset.key = key;
+      cell.setAttribute("aria-label", data ? `Baris ${r + 1}, kolom ${c + 1}` : "Kotak tidak aktif");
+
+      if (data) {
+        if (data.number !== null) {
+          const number = document.createElement("span");
+          number.className = "number";
+          number.textContent = data.number;
+          cell.appendChild(number);
+        }
+        const letter = document.createElement("span");
+        letter.className = "letter";
+        letter.textContent = "";
+        cell.appendChild(letter);
+        cell.addEventListener("click", () => selectCell(key, true));
+        cell.addEventListener("keydown", handleCellKeydown);
+        cell.tabIndex = 0;
+      } else {
+        cell.disabled = true;
+        cell.tabIndex = -1;
+        cell.setAttribute("aria-hidden", "true");
+      }
+      grid.appendChild(cell);
+    }
+  }
+}
+
+function renderClueLists() {
+  const across = $("acrossClues");
+  const down = $("downClues");
+  across.innerHTML = "";
+  down.innerHTML = "";
+
+  const acrossEntries = state.entries.filter(e => e.direction === "across")
+    .sort((a, b) => a.number - b.number);
+  const downEntries = state.entries.filter(e => e.direction === "down")
+    .sort((a, b) => a.number - b.number);
+
+  $("acrossCount").textContent = `${acrossEntries.length} soal`;
+  $("downCount").textContent = `${downEntries.length} soal`;
+
+  for (const entry of [...acrossEntries, ...downEntries]) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "clue-item";
+    button.dataset.entryId = entry.id;
+
+    const number = document.createElement("span");
+    number.className = "clue-number";
+    number.textContent = entry.number;
+
+    const text = document.createElement("span");
+    text.textContent = entry.clue;
+
+    button.append(number, text);
+    button.addEventListener("click", () => selectEntry(entry.id));
+    (entry.direction === "across" ? across : down).appendChild(button);
+  }
+}
+
+function getEntry(id) {
+  return state.entries.find(entry => entry.id === id) || null;
+}
+
+function getCellValue(key) {
+  const el = document.querySelector(`.cell[data-key="${key}"] .letter`);
+  return el ? el.textContent : "";
+}
+
+function setCellValue(key, value) {
+  const cell = document.querySelector(`.cell[data-key="${key}"]`);
+  if (!cell) return;
+  const letter = cell.querySelector(".letter");
+  if (letter) letter.textContent = value;
+}
+
+function getEntriesAt(key) {
+  const data = state.cells.get(key);
+  if (!data) return [];
+  return data.entries.map(getEntry).filter(Boolean);
+}
+
+function selectCell(key, cycleDirection = false) {
+  if (state.finished || !state.cells.has(key)) return;
+
+  const entries = getEntriesAt(key);
+  if (!entries.length) return;
+
+  let entry = entries.find(e => e.id === state.activeEntryId);
+  if (cycleDirection && entries.length > 1 && entry) {
+    const idx = entries.findIndex(e => e.id === entry.id);
+    entry = entries[(idx + 1) % entries.length];
+  } else if (!entry || !entries.some(e => e.id === entry.id)) {
+    entry = entries.find(e => e.direction === state.activeDirection) || entries[0];
+  }
+
+  if (entry && state.solved.has(entry.id)) {
+    const unsolved = entries.find(e => !state.solved.has(e.id));
+    if (unsolved) entry = unsolved;
+  }
+
+  state.activeEntryId = entry.id;
+  state.activeDirection = entry.direction;
+  state.selectedCellKey = key;
+  updateDisplay();
+}
+
+function selectEntry(id) {
+  if (state.finished) return;
+  const entry = getEntry(id);
+  if (!entry) return;
+  state.activeEntryId = id;
+  state.activeDirection = entry.direction;
+  state.selectedCellKey = entry.cells.find(key => !state.checkedCells.has(key)) || entry.cells[0];
+  updateDisplay();
+}
+
+function updateDisplay() {
+  const entry = getEntry(state.activeEntryId);
+
+  document.querySelectorAll(".cell").forEach(cell => {
+    const key = cell.dataset.key;
+    if (!state.cells.has(key)) return;
+
+    cell.classList.remove("word-active", "selected", "correct", "wrong", "hinted");
+    const data = state.cells.get(key);
+    if (data.entries.some(id => state.solved.has(id))) {
+      cell.classList.add("correct");
+    }
+    if (entry && entry.cells.includes(key) && !state.solved.has(entry.id)) {
+      cell.classList.add("word-active");
+    }
+    if (key === state.selectedCellKey) cell.classList.add("selected");
+    if (state.hintedCells.has(key)) cell.classList.add("hinted");
+    if (state.wrongCells.has(key)) cell.classList.add("wrong");
+
+    const mark = cell.querySelector(".hint-mark");
+    if (mark) mark.remove();
+    if (state.hintedCells.has(key)) {
+      const hintMark = document.createElement("span");
+      hintMark.className = "hint-mark";
+      hintMark.textContent = "★";
+      cell.appendChild(hintMark);
+    }
+  });
+
+  document.querySelectorAll(".clue-item").forEach(button => {
+    const id = Number(button.dataset.entryId);
+    button.classList.toggle("active", id === state.activeEntryId);
+    button.classList.toggle("solved", state.solved.has(id));
+  });
+
+  if (entry) {
+    $("activeTitle").textContent = `SOAL ${entry.number}`;
+    $("activeDirection").textContent = entry.direction === "across" ? "MENDATAR →" : "MENURUN ↓";
+    $("directionPill").textContent = entry.direction === "across" ? "MENDATAR" : "MENURUN";
+    $("activeText").textContent = entry.clue;
+    $("letterCount").textContent = `Panjang jawaban: ${entry.length} huruf · ${entry.cells.filter(k => getCellValue(k)).length}/${entry.length} terisi`;
+    $("switchDirection").disabled = getEntriesAt(state.selectedCellKey).length < 2;
+  } else {
+    $("activeTitle").textContent = "MULAI PETUALANGAN";
+    $("activeDirection").textContent = "PILIH SOAL";
+    $("activeText").textContent = "Pilih salah satu nomor pada papan atau petunjuk di samping.";
+    $("letterCount").textContent = "Panjang jawaban: —";
+    $("switchDirection").disabled = true;
+  }
+
+  $("score").textContent = String(state.score);
+  $("solved").textContent = String(state.solved.size);
+  $("hints").textContent = String(state.hints);
+  const percent = Math.round(state.solved.size / state.entries.length * 100);
+  $("percent").textContent = `${percent}%`;
+  $("progress").style.width = `${percent}%`;
+  $("checkBtn").disabled = state.finished;
+  $("hintBtn").disabled = state.finished || !entry || state.solved.has(entry.id);
+}
+
+function handleCellKeydown(event) {
+  const key = event.currentTarget.dataset.key;
+  if (event.key === "ArrowRight" || event.key === "ArrowLeft" ||
+      event.key === "ArrowUp" || event.key === "ArrowDown") {
+    event.preventDefault();
+    moveSelection(event.key);
+  } else if (event.key === "Backspace") {
+    event.preventDefault();
+    eraseCurrent();
+  } else if (/^[a-zA-Z]$/.test(event.key)) {
+    event.preventDefault();
+    selectCell(key, false);
+    enterLetter(event.key.toUpperCase());
+  } else if (event.key === " " || event.key === "Enter") {
+    event.preventDefault();
+    selectCell(key, true);
+  }
+}
+
+function enterLetter(letter) {
+  if (state.finished || !/^[A-Z]$/.test(letter)) return;
+  const entry = getEntry(state.activeEntryId);
+  if (!entry || state.solved.has(entry.id)) return;
+
+  let key = state.selectedCellKey;
+  if (!key || !entry.cells.includes(key)) key = entry.cells[0];
+
+  setCellValue(key, letter);
+  state.checkedCells.delete(key);
+  state.wrongCells.delete(key);
+
+  const index = entry.cells.indexOf(key);
+  let nextKey = null;
+  for (let i = index + 1; i < entry.cells.length; i++) {
+    if (!state.checkedCells.has(entry.cells[i])) {
+      nextKey = entry.cells[i];
+      break;
+    }
+  }
+
+  if (!nextKey) {
+    nextKey = entry.cells.find(k => !state.checkedCells.has(k) && !getCellValue(k)) || null;
+  }
+  if (nextKey) state.selectedCellKey = nextKey;
+
+  updateDisplay();
+  setMessage("Huruf tersimpan. Teruskan hingga jawabanmu lengkap.");
+  focusSelectedCell(false);
+}
+
+function eraseCurrent() {
+  if (state.finished) return;
+  const entry = getEntry(state.activeEntryId);
+  if (!entry || !state.selectedCellKey || state.solved.has(entry.id)) return;
+
+  let key = state.selectedCellKey;
+  if (!getCellValue(key)) {
+    const index = entry.cells.indexOf(key);
+    if (index > 0) {
+      key = entry.cells[index - 1];
+      state.selectedCellKey = key;
+    }
+  }
+
+  if (state.hintedCells.has(key)) {
+    setMessage("Huruf bantuan tidak dapat dihapus. Pilih kotak lain untuk mengubah jawaban.");
+    updateDisplay();
+    return;
+  }
+
+  setCellValue(key, "");
+  state.checkedCells.delete(key);
+  state.wrongCells.delete(key);
+  updateDisplay();
+  focusSelectedCell(false);
+}
+
+function moveSelection(key) {
+  const entry = getEntry(state.activeEntryId);
+  if (!entry) return;
+
+  const index = entry.cells.indexOf(state.selectedCellKey);
+  if (index < 0) return;
+
+  let next = index;
+  if (key === "ArrowRight" || key === "ArrowDown") next++;
+  if (key === "ArrowLeft" || key === "ArrowUp") next--;
+  if (next < 0 || next >= entry.cells.length) return;
+
+  state.selectedCellKey = entry.cells[next];
+  updateDisplay();
+  focusSelectedCell(false);
+}
+
+function focusSelectedCell(moveFocus = true) {
+  if (!state.selectedCellKey || !moveFocus) return;
+  const el = document.querySelector(`.cell[data-key="${state.selectedCellKey}"]`);
+  if (el) el.focus({ preventScroll: true });
+}
+
+function checkAnswers() {
+  if (state.finished) return;
+
+  let newlySolved = 0;
+  let wrong = 0;
+  let incomplete = 0;
+  const wrongToClear = new Set();
+
+  for (const entry of state.entries) {
+    if (state.solved.has(entry.id)) continue;
+
+    const values = entry.cells.map(getCellValue);
+    if (values.every(v => !v)) continue;
+    if (values.some(v => !v)) {
+      incomplete++;
+      continue;
+    }
+
+    const isCorrect = values.join("") === entry.answer;
+
+    if (isCorrect) {
+      state.solved.add(entry.id);
+      newlySolved++;
+      entry.cells.forEach(key => {
+        state.checkedCells.add(key);
+        state.wrongCells.delete(key);
+      });
+    } else {
+      wrong++;
+      entry.cells.forEach((key, i) => {
+        if (values[i] !== entry.answer[i] && !state.hintedCells.has(key)) {
+          wrongToClear.add(key);
+          state.wrongCells.add(key);
+        }
+      });
+    }
+  }
+
+  if (wrong > 0 || incomplete > 0) {
+    state.errors += wrong;
+    state.score = Math.max(0, state.score - wrong * 20);
+  }
+
+  updateDisplay();
+
+  if (wrongToClear.size) {
+    setMessage(`${wrong} jawaban belum tepat. Kotak yang salah akan dikosongkan; coba analisis petunjuk sekali lagi.`, "error");
+    setTimeout(() => {
+      wrongToClear.forEach(key => {
+        setCellValue(key, "");
+        state.wrongCells.delete(key);
+        state.checkedCells.delete(key);
+      });
+      updateDisplay();
+    }, 380);
+  } else if (newlySolved > 0) {
+    setMessage(`Hebat! ${newlySolved} kata berhasil ditemukan. Lanjutkan ke petunjuk berikutnya.`, "success");
+  } else if (incomplete > 0) {
+    setMessage("Masih ada jawaban yang belum lengkap. Periksa kembali kotak yang kosong.");
+  } else {
+    setMessage("Belum ada jawaban baru yang lengkap. Isi beberapa huruf lagi, lalu periksa kembali.");
+  }
+
+  if (state.solved.size === state.entries.length) {
+    state.finished = true;
+    updateDisplay();
+    setTimeout(showWin, 450);
+    return;
+  }
+
+  const next = state.entries.find(e => !state.solved.has(e.id));
+  if (next && newlySolved > 0) {
+    state.activeEntryId = next.id;
+    state.activeDirection = next.direction;
+    state.selectedCellKey = next.cells.find(k => !state.checkedCells.has(k)) || next.cells[0];
+    updateDisplay();
+  }
+}
+
+function useHint() {
+  if (state.finished) return;
+  const entry = getEntry(state.activeEntryId);
+
+  if (!entry || state.solved.has(entry.id)) {
+    setMessage("Pilih soal yang belum selesai sebelum menggunakan bantuan.");
+    return;
+  }
+
+  const candidates = entry.cells.filter(key =>
+    !state.hintedCells.has(key) && getCellValue(key) !== state.cells.get(key).solution
+  );
+
+  if (!candidates.length) {
+    setMessage("Semua huruf pada kata aktif sudah tepat atau telah dibantu. Coba periksa jawabanmu.", "success");
+    return;
+  }
+
+  const key = candidates[Math.floor(Math.random() * candidates.length)];
+  setCellValue(key, state.cells.get(key).solution);
+  state.hintedCells.add(key);
+  state.checkedCells.delete(key);
+  state.wrongCells.delete(key);
+  state.hints++;
+  state.score = Math.max(0, state.score - 35);
+  state.selectedCellKey = key;
+  updateDisplay();
+  setMessage("Bantuan terbuka! Satu huruf ditampilkan. Skor berkurang 35 poin.", "success");
+
+  const next = entry.cells.find(k => !state.hintedCells.has(k) && !getCellValue(k));
+  if (next) state.selectedCellKey = next;
+  updateDisplay();
+  focusSelectedCell(false);
+}
+
+function buildKeyboard() {
+  const rows = [
+    ["QWERTYUIOP", "keyRow1"],
+    ["ASDFGHJKL", "keyRow2"],
+    ["ZXCVBNM", "keyRow3"]
+  ];
+
+  for (const [letters, id] of rows) {
+    const row = $(id);
+    row.innerHTML = "";
+    for (const letter of letters) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "key";
+      button.textContent = letter;
+      button.setAttribute("aria-label", `Huruf ${letter}`);
+      button.addEventListener("click", () => enterLetter(letter));
+      row.appendChild(button);
+    }
+    if (id === "keyRow3") {
+      const backspace = document.createElement("button");
+      backspace.type = "button";
+      backspace.className = "key wide";
+      backspace.textContent = "⌫ HAPUS";
+      backspace.setAttribute("aria-label", "Hapus huruf");
+      backspace.addEventListener("click", eraseCurrent);
+      row.appendChild(backspace);
+    }
+  }
+}
+
+function showWin() {
+  $("finalScore").textContent = state.score;
+  $("finalHints").textContent = state.hints;
+  $("finalSolved").textContent = `${state.solved.size} dari ${state.entries.length}`;
+  $("winOverlay").classList.add("show");
+  launchConfetti();
+  $("playAgain").focus();
+}
+
+function launchConfetti() {
+  const colors = ["#54c878", "#ffcf4a", "#5299f4", "#ff7485", "#c28af4", "#f5a34e"];
+  for (let i = 0; i < 75; i++) {
+    const piece = document.createElement("div");
+    piece.className = "confetti";
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.background = colors[i % colors.length];
+    piece.style.setProperty("--drift", `${Math.random() * 180 - 90}px`);
+    piece.style.animationDelay = `${Math.random() * 1.3}s`;
+    piece.style.animationDuration = `${2 + Math.random() * 1.5}s`;
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), 5000);
+  }
+}
+
+function resetGame() {
+  state.solved.clear();
+  state.hintedCells.clear();
+  state.checkedCells.clear();
+  state.wrongCells.clear();
+  state.errors = 0;
+  state.hints = 0;
+  state.finished = false;
+  state.score = 1000;
+  state.activeEntryId = state.entries[0]?.id ?? null;
+  state.activeDirection = state.entries[0]?.direction ?? "across";
+  state.selectedCellKey = state.entries[0]?.cells[0] ?? null;
+
+  document.querySelectorAll(".cell .letter").forEach(el => el.textContent = "");
+  $("winOverlay").classList.remove("show");
+  document.querySelectorAll(".confetti").forEach(el => el.remove());
+  setMessage("Permainan dimulai! Pilih petunjuk, isi kotak, lalu periksa jawaban.");
+  updateDisplay();
+}
+
+$("checkBtn").addEventListener("click", checkAnswers);
+$("hintBtn").addEventListener("click", useHint);
+$("resetBtn").addEventListener("click", () => {
+  if (state.solved.size > 0 || state.hints > 0) {
+    const confirmed = window.confirm("Mulai ulang permainan? Semua jawaban, skor, dan bantuan akan direset.");
+    if (!confirmed) return;
+  }
+  resetGame();
+});
+
+$("switchDirection").addEventListener("click", () => {
+  if (!state.selectedCellKey) return;
+  selectCell(state.selectedCellKey, true);
+});
+
+$("playAgain").addEventListener("click", resetGame);
+$("closeWin").addEventListener("click", () => $("winOverlay").classList.remove("show"));
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") {
+    $("winOverlay").classList.remove("show");
+    return;
+  }
+  if (event.key === "Backspace" && !event.target.classList.contains("cell")) {
+    event.preventDefault();
+    eraseCurrent();
+  }
+});
+
+function initializeGame() {
+  buildPuzzle();
+  renderGrid();
+  renderClueLists();
+  buildKeyboard();
+
+  const first = state.entries[0];
+  if (first) {
+    state.activeEntryId = first.id;
+    state.activeDirection = first.direction;
+    state.selectedCellKey = first.cells[0];
+  }
+
+  updateDisplay();
+  setMessage("Selamat datang, Penjelajah Hayati! Mulailah dengan membaca petunjuk dan mengisi huruf.");
+}
+
+initializeGame();
+</script>
+</body>
+</html>
